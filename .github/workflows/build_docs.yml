@@ -1,0 +1,46 @@
+name: Build docs
+on: push
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+    # - name: Cancel any previous incomplete runs
+    #   uses: styfle/cancel-workflow-action@0.9.1
+    #   with:
+    #     all_but_latest: true
+    #     access_token: ${{ github.token }}
+
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.10'
+
+    - name: Clone extension repo
+      run: |
+        # extract name, version, and src from ndx-meta.yaml
+
+        version=`grep "version" ndx-meta.yaml | cut -f2- -d ":" | sed 's/ *//g'`
+        echo $version
+        src=`grep "src" ndx-meta.yaml | cut -f2- -d ":" | sed 's/ *//g'`
+        echo $src
+
+        git clone --depth 1 --branch $version $src.git
+
+    - name: Build docs for extension repo
+      run: |
+        pip install sphinx
+        name=`grep "name" ndx-meta.yaml | cut -f2- -d ":" | sed 's/ *//g'`
+        echo $name
+        cd $name/docs
+        make fulldoc
+        cd ../..
+        mv $name/docs/_build docs/
+
+        git add docs
+        git commit -m "Update docs"
+        git push
