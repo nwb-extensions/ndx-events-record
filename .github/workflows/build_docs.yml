@@ -33,10 +33,14 @@ jobs:
 
     - name: Build docs for extension repo
       run: |
-        pip install sphinx
         name=`grep "name" ndx-meta.yaml | cut -f2- -d ":" | sed 's/ *//g'`
         echo $name
-        cd $name/docs
+        cd $name
+        pip install -r requirements.txt  # install reqs, including hdmf_docutils
+        pip install .  # install extension from source
+        pip check
+        pip show hdmf_docutils
+        cd docs
         make fulldoc
         cd ../..
         mv $name/docs/_build docs/
