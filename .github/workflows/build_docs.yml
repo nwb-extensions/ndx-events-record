@@ -41,10 +41,15 @@ jobs:
         pip check
         pip show hdmf_docutils
         cd docs
-        make fulldoc
+        make html
         cd ../..
         mv $name/docs/_build docs/
 
+        echo $version  # test
+
+    - name: Commit and push docs to branch using nwb-extensions-bot account
+      run: |
+        git checkout gh-pages
         git add docs
         git commit -m "Update docs"
         git push
